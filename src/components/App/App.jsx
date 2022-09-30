@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
+import useLocalStorage from 'Hooks/useLocalStorage';
 import ContactsForm from '../ContactsForm/ContactForm';
 import ContactsList from '../ContactsList/ContactList';
 import SearchFilter from '../SearchFilter/SearchFilter';
@@ -7,86 +8,67 @@ import json from '../data/contacts.json';
 import stl from './App.module.css';
 import shortid from 'shortid';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
 const STORAGE_KEY = 'contacts';
 
-class App extends Component {
-  state = {
-    contacts: json,
-    fillter: '',
-  };
+const App = () => {
+  const [contacts, setContacts] = useLocalStorage(STORAGE_KEY, json);
+  const [fillter, setFillter] = useState('');
 
-  addContact = ({ name, number }) => {
+  const addContact = (name, number) => {
     const contact = {
       id: shortid.generate(),
       name,
       number,
     };
-    const initialContacts = this.state.contacts;
 
-    if (initialContacts.find(contact => contact.name.toLowerCase() === name.toLowerCase())) {
+    if (
+      contacts.find(
+        contact => contact.name.toLowerCase() === name.toLowerCase()
+      )
+    ) {
       return Notify.warning(`${contact.name} is already in the Phonebook`);
-    }
-    else if (initialContacts.find(contact => contact.number === number)) {
+    } else if (contacts.find(contact => contact.number === number)) {
       return Notify.warning(`${contact.number} is already in the Phonebook`);
     }
 
-    this.setState(prevState => ({
-      contacts: [contact, ...prevState.contacts],
-    }));
+    setContacts(prevState => [contact, ...prevState]);
   };
-  onSubmitData = data => {
-    console.log(this.data);
-  };
-  deleteContact = contactId => {
-    this.setState(prevState => {
-      return {
-        contacts: prevState.contacts.filter(
-          contact => contact.id !== contactId
-        ),
-      };
-    });
-  };
-  changeFillter = e => {
-    this.setState({ fillter: e });
-  };
-  deleteAllContacts = () => {
-    this.setState({contacts: []})
-  }
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.contacts))
-    }
-  }
-  componentDidMount() {
-    const contacts = localStorage.getItem(STORAGE_KEY);
-    const parseContacts = JSON.parse(contacts)
-    if (parseContacts) {
-      this.setState({contacts: parseContacts})
-    }
-  }
 
-  render() {
-    const { contacts, fillter } = this.state;
+  const deleteContact = contactId => {
+    setContacts(prevState =>
+      prevState.filter(contact => contact.id !== contactId)
+    );
+  };
+
+  const changeFillter = e => setFillter(e);
+  
+  const deleteAllContacts = () => {
+    setContacts([]);
+  };
+
+  const getVisibleTasks = () => {
     const normalizedFillter = fillter.toLowerCase();
     const visibleTasks = contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFillter)
     );
-    return (
-      <div className={stl.container}>
-        <h1 className={stl.title}>Phonebook</h1>
-        <ContactsForm
-          onSubmitData={this.onSubmitData}
-          onAddContact={this.addContact}
-        />
-        <h2 className={stl.title}>Contacts</h2>
-        <SearchFilter value={fillter} onChangeFilter={this.changeFillter} />
-        <ContactsList
-          contacts={visibleTasks}
-          onDeleteContact={this.deleteContact}
-        />
-        <BtnDeleteAll onDeleteAll={this.deleteAllContacts} />
-      </div>
-    );
-  }
-}
+    return visibleTasks;
+  };
+
+  return (
+    <div className={stl.container}>
+      <h1 className={stl.title}>Phonebook</h1>
+      <ContactsForm onAddContact={addContact} />
+      <h2 className={stl.title}>Contacts</h2>
+      <SearchFilter value={fillter} onChangeFilter={changeFillter} />
+      <ContactsList
+        contacts={getVisibleTasks()}
+        onDeleteContact={deleteContact}
+      />
+      <BtnDeleteAll onDeleteAll={deleteAllContacts} />
+    </div>
+  );
+};
+
+
 export default App;
