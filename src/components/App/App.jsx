@@ -21,19 +21,20 @@ const App = () => {
       name,
       number,
     };
+    const findName = contacts.find(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+    const findNumber = contacts.find(contact => contact.number === number);
 
-    if (
-      contacts.find(
-        contact => contact.name.toLowerCase() === name.toLowerCase()
-      )
-    ) {
-      return Notify.warning(`${contact.name} is already in the Phonebook`);
-    } else if (contacts.find(contact => contact.number === number)) {
-      return Notify.warning(`${contact.number} is already in the Phonebook`);
+    if (findName) {
+      return Notify.warning(`${name} is already in the Phonebook`);
     }
-
+    if (findNumber) {
+      return Notify.warning(`${number} is already in the Phonebook`);
+    }
     setContacts(prevState => [contact, ...prevState]);
   };
+ 
 
   const deleteContact = contactId => {
     setContacts(prevState =>
@@ -42,7 +43,7 @@ const App = () => {
   };
 
   const changeFillter = e => setFillter(e);
-  
+
   const deleteAllContacts = () => {
     setContacts([]);
   };
@@ -69,6 +70,5 @@ const App = () => {
     </div>
   );
 };
-
 
 export default App;
