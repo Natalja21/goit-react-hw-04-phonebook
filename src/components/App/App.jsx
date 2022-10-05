@@ -21,20 +21,21 @@ const App = () => {
       name,
       number,
     };
-    const findName = contacts.find(
-      contact => contact.name.toLowerCase() === name.toLowerCase()
+    const findContact = contacts.find(
+      contact =>
+        contact.name.toLowerCase() === name.toLowerCase() ||
+        contact.number === number
     );
-    const findNumber = contacts.find(contact => contact.number === number);
 
-    if (findName) {
+    if (findContact) {
       return Notify.warning(`${name} is already in the Phonebook`);
     }
-    if (findNumber) {
+    if (findContact) {
       return Notify.warning(`${number} is already in the Phonebook`);
     }
     setContacts(prevState => [contact, ...prevState]);
   };
- 
+
   const deleteContact = contactId => {
     setContacts(prevState =>
       prevState.filter(contact => contact.id !== contactId)
