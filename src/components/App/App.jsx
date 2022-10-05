@@ -35,7 +35,6 @@ const App = () => {
     setContacts(prevState => [contact, ...prevState]);
   };
  
-
   const deleteContact = contactId => {
     setContacts(prevState =>
       prevState.filter(contact => contact.id !== contactId)
